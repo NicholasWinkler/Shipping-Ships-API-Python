@@ -15,7 +15,7 @@ class JSONServer(HandleRequests):
     def do_GET(self):
         """Handle GET requests from a client"""
 
-        response_body = ""
+        response_body = ""  # This is where a function first starts in the code
         url = self.parse_url(self.path)
 
         if url["requested_resource"] == "docks":
