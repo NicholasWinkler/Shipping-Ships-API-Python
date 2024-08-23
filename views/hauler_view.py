@@ -36,7 +36,7 @@ def delete_hauler(pk):
     return True if number_of_rows_deleted > 0 else False
 
 
-def list_haulers():
+def list_haulers(url):
     # Open a connection to the database
     with sqlite3.connect("./shipping.db") as conn:
         conn.row_factory = sqlite3.Row
@@ -83,3 +83,20 @@ def retrieve_hauler(pk):
         serialized_hauler = json.dumps(dict(query_results))
 
     return serialized_hauler
+
+def create_hauler(new_haulers):
+    with sqlite3.connect("./shipping.db") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        INSERT INTO Hauler
+            (name, dock_id)
+        VALUES
+            (?, ?)
+        """, (new_haulers['name'], new_haulers['dock_id'], ))
+
+        id = db_cursor.lastrowid
+        new_haulers['id'] = id
+
+    return new_haulers

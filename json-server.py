@@ -6,7 +6,7 @@ from nss_handler import HandleRequests, status
 # Add your imports below this line
 from views import list_docks, retrieve_dock, delete_dock, update_dock
 from views import list_haulers, retrieve_hauler, delete_hauler, update_hauler
-from views import list_ships, retrieve_ship, delete_ship, update_ship
+from views import list_ships, retrieve_ship, delete_ship, update_ship, create_ship
 
 
 class JSONServer(HandleRequests):
@@ -36,10 +36,10 @@ class JSONServer(HandleRequests):
 
         elif url["requested_resource"] == "ships":
             if url["pk"] != 0:
-                response_body = retrieve_ship(url["pk"])
+                response_body = retrieve_ship(url["pk"], url)
                 return self.response(response_body, status.HTTP_200_SUCCESS.value)
 
-            response_body = list_ships()
+            response_body = list_ships(url) #pass an argument to list_ships to expand
             return self.response(response_body, status.HTTP_200_SUCCESS.value)
 
         else:
@@ -109,17 +109,36 @@ class JSONServer(HandleRequests):
 
         else:
             return self.response("Not found", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
-
     def do_POST(self):
         """Handle POST requests from a client"""
+        # Parse the URL and get the requested resource
+        url = self.parse_url(self.path)
+        requested_resource = url["requested_resource"]
 
-        pass
+        # Get the request body JSON for the new resource data
+        content_len = int(self.headers.get('content-length', 0)) # line of code checks how much data is coming in with the request.
+        request_body = self.rfile.read(content_len) # line reads the actual data that was sent.
+        request_body = json.loads(request_body) # line takes the raw data and turns it into a structured format that your program can understand.
 
+        if requested_resource == "ships":
+            # Create a new ship
+            new_ship = create_ship(request_body)
+            if new_ship:
+                # Assuming the function returns the created ship with a new ID
+                return self.response(json.dumps(new_ship), status.HTTP_201_SUCCESS_CREATED.value)
+            
+        elif requested_resource == "haulers"
+            new_hauler = create_hauler(request_body)
+            if new_hauler:
+                return self.response(json.dumps(new_hauler), status.HTTP_201_SUCCESS_CREATED.value)
 
+        elif requested_resource == "docks"
+            new_dock = create_dock(request_body)
+            if new_dock:
+                return self.response(json.dumps(new_dock), status.HTTP_201_SUCCESS_CREATED.value)
 
-
-
-
+        else:
+            return self.response("Not found", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
 #
 # THE CODE BELOW THIS LINE IS NOT IMPORTANT FOR REACHING YOUR LEARNING OBJECTIVES
